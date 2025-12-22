@@ -1,46 +1,32 @@
 using UnityEngine;
-using IS = UnityEngine.InputSystem;
+using UnityEngine.InputSystem;
 
-
-public class PlayerController : MonoBehaviour
+public class Example : MonoBehaviour
 {
+    InputAction moveAction;
 
     public float rotationSpeed = 10.0f;
     public float speed = 5.0f;
 
     private Rigidbody rb;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
+        moveAction = InputSystem.actions.FindAction("Move");
         rb = GetComponent<Rigidbody>();
-        if (rb == null)
-        {
-            Debug.LogError(Equals(gameObject.name, " Rigidbody component not found!"));
-            enabled = false;
-            return;
-        }
     }
 
-    // Fixed Update is called at a fixed interval
     void FixedUpdate()
     {
-        float angle = rotationSpeed * Time.fixedDeltaTime;
-        Quaternion turn;
+        Vector2 moveValue = moveAction.ReadValue<Vector2>();
 
-        if (IS.Keyboard.current == null) // Input System not ready
-            return;
+        float yawAmount = moveValue.x * rotationSpeed * Time.fixedDeltaTime;
+        Quaternion yawRotation = Quaternion.Euler(0f, yawAmount, 0f);
+        rb.MoveRotation(rb.rotation * yawRotation);
 
-        if (IS.Keyboard.current.dKey.isPressed)
-        {
-            turn = Quaternion.Euler(0f, angle, 0f);
-            rb.MoveRotation(rb.rotation * turn);
-        }
+        float pitchAmount = moveValue.y * rotationSpeed * Time.fixedDeltaTime;
+        Quaternion pitchRotation = Quaternion.Euler(pitchAmount, 0f, 0f);
+        rb.MoveRotation(rb.rotation * pitchRotation);
 
-        if (IS.Keyboard.current.qKey.isPressed)
-        {
-            turn = Quaternion.Euler(0f, -angle, 0f); // doesn't work -- learn to use input system properly
-            rb.MoveRotation(rb.rotation * turn);
-        }
     }
 }
