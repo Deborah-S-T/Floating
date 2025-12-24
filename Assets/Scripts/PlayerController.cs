@@ -3,16 +3,23 @@ using UnityEngine.InputSystem;
 
 public class Example : MonoBehaviour
 {
+    // inputs
     InputAction moveAction;
     InputAction propulsionAction;
 
+    // movement variables
     public float rotationSpeed = 10.0f;
     public float speed = 5.0f;
     public float minipropulsionForce = 5.0f;
 
+    public float properPropulsionForce = 10.0f;
 
+    Vector2 moveValue;
+
+    // rigidbody
     private Rigidbody rb;
 
+    // -------------------------START----------------------------------
     private void Start()
     {
         moveAction = InputSystem.actions.FindAction("Move");
@@ -20,27 +27,65 @@ public class Example : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
+    // --------------------------UPDATE---------------------------------
     void Update()
     {
-        MovePlayer();
-
+        // input handling in update
+        moveValue = moveAction.ReadValue<Vector2>();
     }
 
-    void MovePlayer()
+    // --------------------------FIXED UPDATE---------------------------
+    void FixedUpdate()
     {
-        Vector2 moveValue = moveAction.ReadValue<Vector2>();
+        // physics handling in fixed update
+        MovePlayer();
+    }
 
-        float yawAmount = moveValue.x * rotationSpeed * Time.fixedDeltaTime;
-        Quaternion yawRotation = Quaternion.Euler(0f, yawAmount, 0f);
-        rb.MoveRotation(rb.rotation * yawRotation);
-
-        float pitchAmount = moveValue.y * rotationSpeed * Time.fixedDeltaTime;
-        Quaternion pitchRotation = Quaternion.Euler(pitchAmount, 0f, 0f);
-        rb.MoveRotation(rb.rotation * pitchRotation);
-
-        if (propulsionAction.triggered)
+    // ------------------------COLLISION DETECTION-----------------------
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
         {
-            rb.MovePosition(rb.position + minipropulsionForce * transform.up * Time.fixedDeltaTime);
+            // if collided with a wall, propel the player away from it
+            Vector3 wallNormal = collision.contacts[0].normal;
+            Propulsion(properPropulsionForce, wallNormal);
         }
     }
+    /*
+    // ------------------------TRIGGER DETECTION-------------------------
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Wall"))
+        {
+            Propulsion(properPropulsionForce, );
+        }
+    }*/
+
+    // ----------------------------------------------------------------------------------------------------
+
+    // -----------------------------MOVE PLAYER-------------------------
+    void MovePlayer()
+    {
+        // rotate forword/backward and sidways
+        float yawAmount = moveValue.x * rotationSpeed * Time.fixedDeltaTime;
+        float pitchAmount = moveValue.y * rotationSpeed * Time.fixedDeltaTime;
+
+        // apply the rotation
+        Quaternion Rotation = Quaternion.Euler(pitchAmount, yawAmount, 0f);
+        rb.MoveRotation(rb.rotation * Rotation);
+
+        // apply mini propulsion upward
+        if (propulsionAction.triggered)
+        {
+            Propulsion(minipropulsionForce, transform.up);
+        }
+    }
+
+    // -----------------------------PROPULSION---------------------------
+    void Propulsion(float propForce, Vector3 direction)
+    {
+        // add velocity towards the wanted direction
+        rb.AddForce(direction * propForce, ForceMode.Acceleration);
+    }
+
 }
