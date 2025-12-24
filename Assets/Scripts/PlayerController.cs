@@ -8,7 +8,8 @@ public class Example : MonoBehaviour
 
     public float rotationSpeed = 10.0f;
     public float speed = 5.0f;
-    public float propulsionForce = 5.0f;
+    public float minipropulsionForce = 5.0f;
+
 
     private Rigidbody rb;
 
@@ -20,6 +21,12 @@ public class Example : MonoBehaviour
     }
 
     void Update()
+    {
+        MovePlayer();
+
+    }
+
+    void MovePlayer()
     {
         Vector2 moveValue = moveAction.ReadValue<Vector2>();
 
@@ -33,10 +40,7 @@ public class Example : MonoBehaviour
 
         if (propulsionAction.triggered)
         {
-
-            rb.MovePosition(rb.position + propulsionForce * transform.up * Time.fixedDeltaTime);
-
+            rb.MovePosition(rb.position + minipropulsionForce * transform.up * Time.fixedDeltaTime);
         }
-
     }
 }
