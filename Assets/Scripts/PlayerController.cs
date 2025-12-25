@@ -15,6 +15,7 @@ public class Example : MonoBehaviour
     private static float minipropulsionForce = 50.0f;
     private static float properPropulsionForce = 500.0f;
     private float availablePropulsions = 4 * properPropulsionForce;
+    private bool propulsed = false;
 
     Vector2 moveValue;
 
@@ -36,6 +37,11 @@ public class Example : MonoBehaviour
     {
         // input handling in update
         moveValue = moveAction.ReadValue<Vector2>();
+
+        if (propulsionAction.triggered)
+        {
+            propulsed = true;
+        }
     }
 
     // --------------------------FIXED UPDATE---------------------------
@@ -70,7 +76,7 @@ public class Example : MonoBehaviour
         rb.MoveRotation(rb.rotation * Rotation);
 
         // apply mini propulsion upward
-        if (propulsionAction.triggered)
+        if (propulsed)
         {
             if (availablePropulsions >= 0)
             {
@@ -81,6 +87,7 @@ public class Example : MonoBehaviour
             {
                 Propulsion(minipropulsionForce, transform.up);
             }
+            propulsed = false;
         }
     }
 
